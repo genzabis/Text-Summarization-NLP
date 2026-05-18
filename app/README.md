@@ -3,11 +3,11 @@
 Aplikasi peringkas teks Bahasa Indonesia berbasis dataset **IndoSum**, dengan tiga
 pendekatan dalam satu antarmuka:
 
-| Model | Tipe | Catatan |
-|------|------|---------|
-| **TextRank** | Extractive (baseline) | Implementasi sendiri (TF-IDF + cosine + PageRank) |
+| Model                   | Tipe                      | Catatan                                                  |
+| ----------------------- | ------------------------- | -------------------------------------------------------- |
+| **TextRank**            | Extractive (baseline)     | Implementasi sendiri (TF-IDF + cosine + PageRank)        |
 | **Seq2Seq + Attention** | Abstractive (model utama) | Encoder GRU bidirectional + Bahdanau attention (PyTorch) |
-| **Google Gemini API** | Abstractive (LLM) | `gemini-1.5-flash` via `google-generativeai` |
+| **Google Gemini API**   | Abstractive (LLM)         | `gemini-1.5-flash` via `google-generativeai`             |
 
 ## Struktur Folder
 
@@ -85,7 +85,7 @@ python -m app.train --resume --epochs 3 --max-train 4000 --lr 5e-4
 
 > **Catatan kualitas Seq2Seq di CPU:** training Seq2Seq+Bahdanau attention
 > sangat berat di CPU. Dengan 2000 sampel × 4 epoch model masih
-> *under-fit* dan sering memprediksi `<unk>` atau token yang sangat sering
+> _under-fit_ dan sering memprediksi `<unk>` atau token yang sangat sering
 > muncul. Untuk ROUGE yang kompetitif (mendekati TextRank ~0.42), butuh
 > minimal 30000+ sampel × 10+ epoch di GPU. Endpoint TextRank dan Gemini
 > tetap berkualitas baik tanpa training.
@@ -106,12 +106,12 @@ python -m app.benchmark --indosum-dir . --max 500 --models textrank,seq2seq
 
 ## REST API
 
-| Method | Endpoint | Body | Deskripsi |
-|--------|----------|------|-----------|
-| GET | `/api/status` | – | Status seluruh summarizer |
-| POST | `/api/summarize` | `{ text, model, num_sentences, reference? }` | Ringkas teks |
-| GET | `/api/sample?split=test&index=0` | – | Ambil sample IndoSum |
-| POST | `/api/evaluate` | `{ prediction, reference }` | Hitung ROUGE |
+| Method | Endpoint                         | Body                                         | Deskripsi                 |
+| ------ | -------------------------------- | -------------------------------------------- | ------------------------- |
+| GET    | `/api/status`                    | –                                            | Status seluruh summarizer |
+| POST   | `/api/summarize`                 | `{ text, model, num_sentences, reference? }` | Ringkas teks              |
+| GET    | `/api/sample?split=test&index=0` | –                                            | Ambil sample IndoSum      |
+| POST   | `/api/evaluate`                  | `{ prediction, reference }`                  | Hitung ROUGE              |
 
 Contoh:
 
