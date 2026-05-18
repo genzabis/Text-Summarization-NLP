@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IndoSum Summarizer · Seq2Seq + TextRank + Gemini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">IS</div>
+        <div>
+          <div class="brand-title">IndoSum</div>
+          <div class="brand-sub">Text Summarizer</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item active" data-tab="summarize">
+          <span class="dot"></span> Ringkas Teks
+        </a>
+        <a class="nav-item" data-tab="dataset">
+          <span class="dot"></span> Sample Dataset
+        </a>
+        <a class="nav-item" data-tab="about">
+          <span class="dot"></span> Tentang
+        </a>
+      </nav>
+
+      <div class="status-card">
+        <div class="status-title">Status Model</div>
+        <ul class="status-list" id="statusList">
+          <li><span class="badge badge-loading">…</span> TextRank</li>
+          <li><span class="badge badge-loading">…</span> Seq2Seq</li>
+          <li><span class="badge badge-loading">…</span> Gemini API</li>
+        </ul>
+      </div>
+
+      <div class="footer-note">
+        <strong>Dataset:</strong> IndoSum<br />
+        <strong>Baseline:</strong> TextRank<br />
+        <strong>Main Model:</strong> Seq2Seq (Bahdanau)
+      </div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Text Summarization Bahasa Indonesia</h1>
+          <p class="subtitle">
+            Bandingkan baseline <em>TextRank</em>, model <em>Seq2Seq</em>, dan
+            <em>Google Gemini</em> pada artikel berbahasa Indonesia.
+          </p>
+        </div>
+      </header>
+
+      <!-- ============ TAB: Summarize ============ -->
+      <section class="tab" id="tab-summarize">
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <h2>Input Teks</h2>
+              <div class="hint">Tempel artikel atau ambil sample dari IndoSum.</div>
+            </div>
+
+            <textarea
+              id="inputText"
+              class="input-area"
+              placeholder="Paste artikel berita berbahasa Indonesia di sini..."
+            ></textarea>
+
+            <div class="control-row">
+              <label class="field">
+                <span>Model</span>
+                <select id="modelSelect">
+                  <option value="textrank">TextRank (baseline)</option>
+                  <option value="seq2seq">Seq2Seq (custom)</option>
+                  <option value="gemini">Google Gemini API</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Jumlah kalimat</span>
+                <input
+                  id="numSentences"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value="3"
+                />
+              </label>
+
+              <label class="field check">
+                <input id="useReference" type="checkbox" />
+                <span>Hitung ROUGE vs reference</span>
+              </label>
+            </div>
+
+            <div id="referenceWrap" class="reference-wrap hidden">
+              <label>
+                <span>Reference summary (gold)</span>
+                <textarea
+                  id="referenceText"
+                  class="input-area small"
+                  placeholder="Tempel ringkasan referensi untuk dihitung skor ROUGE..."
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="actions">
+              <button id="btnSummarize" class="btn btn-primary">
+                Ringkas
+              </button>
+              <button id="btnLoadSample" class="btn btn-ghost">
+                Muat Sample IndoSum
+              </button>
+              <button id="btnClear" class="btn btn-ghost">Bersihkan</button>
+            </div>
+
+            <div id="error" class="error hidden"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Hasil Ringkasan</h2>
+              <div class="hint" id="resultModel">—</div>
+            </div>
+
+            <div id="loadingBar" class="loading hidden">
+              <div class="loading-bar"></div>
+              <span>Sedang meringkas…</span>
+            </div>
+
+            <div id="result" class="result-area">
+              <div class="placeholder">
+                Ringkasan akan muncul di sini.
+              </div>
+            </div>
+
+            <div id="stats" class="stats hidden">
+              <div class="stat">
+                <span class="stat-label">Input</span>
+                <span class="stat-value" id="statInput">—</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Ringkasan</span>
+                <span class="stat-value" id="statSummary">—</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Compression</span>
+                <span class="stat-value" id="statCompression">—</span>
+              </div>
+            </div>
+
+            <div id="rouge" class="rouge hidden">
+              <h3>ROUGE Score</h3>
+              <div class="rouge-grid">
+                <div><span>ROUGE-1</span><strong id="r1">—</strong></div>
+                <div><span>ROUGE-2</span><strong id="r2">—</strong></div>
+                <div><span>ROUGE-L</span><strong id="rL">—</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: Dataset ============ -->
+      <section class="tab hidden" id="tab-dataset">
+        <div class="card">
+          <div class="card-header">
+            <h2>Sample Dataset IndoSum</h2>
+            <div class="hint">Telusuri artikel + gold summary langsung dari file <code>.jsonl</code>.</div>
+          </div>
+
+          <div class="control-row">
+            <label class="field">
+              <span>Split</span>
+              <select id="sampleSplit">
+                <option value="test">test</option>
+                <option value="dev">dev</option>
+                <option value="train">train</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Index</span>
+              <input id="sampleIndex" type="number" min="0" value="0" />
+            </label>
+            <button id="btnFetchSample" class="btn btn-primary">Ambil</button>
+            <button id="btnSendToInput" class="btn btn-ghost" disabled>
+              Kirim ke Tab Ringkas
+            </button>
+          </div>
+
+          <div id="sampleMeta" class="meta hidden"></div>
+
+          <h3>Artikel</h3>
+          <div id="sampleArticle" class="result-area">
+            <div class="placeholder">Belum ada sample.</div>
+          </div>
+
+          <h3>Gold Summary</h3>
+          <div id="sampleGold" class="result-area">
+            <div class="placeholder">Belum ada sample.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: About ============ -->
+      <section class="tab hidden" id="tab-about">
+        <div class="card">
+          <div class="card-header">
+            <h2>Tentang Project</h2>
+          </div>
+          <p>
+            Aplikasi ini mengimplementasikan tiga pendekatan text summarization
+            untuk Bahasa Indonesia di atas dataset
+            <strong>IndoSum</strong>:
+          </p>
+          <ul class="bullets">
+            <li>
+              <strong>TextRank</strong> – baseline ekstraktif berbasis graf
+              kalimat dengan skor TF-IDF + cosine + PageRank.
+            </li>
+            <li>
+              <strong>Seq2Seq</strong> – encoder-decoder GRU bidirectional dengan
+              <em>Bahdanau attention</em> (PyTorch). Dilatih pada split train
+              IndoSum, di-evaluasi via ROUGE.
+            </li>
+            <li>
+              <strong>Google Gemini API</strong> – peringkasan abstraktif via
+              model <code>gemini-1.5-flash</code> menggunakan API key dari
+              file <code>.env</code>.
+            </li>
+          </ul>
+
+          <h3>Cara Menjalankan</h3>
+          <ol class="bullets">
+            <li>Install dependency: <code>pip install -r app/requirements.txt</code></li>
+            <li>Salin <code>app/.env.example</code> menjadi <code>app/.env</code>, isi <code>GEMINI_API_KEY</code>.</li>
+            <li>(Opsional) Latih Seq2Seq: <code>cd app &amp;&amp; python -m app.train --epochs 5 --max-train 20000</code></li>
+            <li>Jalankan server: <code>python -m app.backend.app</code></li>
+            <li>Buka <code>http://127.0.0.1:5000</code> di browser.</li>
+          </ol>
+
+          <h3>Anggota Kelompok</h3>
+          <ul class="bullets">
+            <li>Atika Andrian Asmiran</li>
+            <li>Fatiyatul Amelia</li>
+            <li>Fikri Nofan Dwi Andika</li>
+            <li>Niamilah Nabil Syahputra</li>
+            <li>Novian Affan Ashofah</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
