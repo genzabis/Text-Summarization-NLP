@@ -30,28 +30,19 @@ async function refreshStatus() {
     list.innerHTML = "";
 
     const items = [
-      { label: "TextRank", ready: data.textrank?.ready, info: "extractive baseline" },
-      {
-        label: "Seq2Seq",
-        ready: data.seq2seq?.ready,
-        info: data.seq2seq?.ready ? data.seq2seq.device : "checkpoint belum ada",
-      },
-      {
-        label: "Gemini API",
-        ready: data.gemini?.ready,
-        info: data.gemini?.has_api_key ? data.gemini.model_name : "API key belum di-set",
-      },
+      { label: "TextRank", ready: data.textrank?.ready },
+      { label: "Seq2Seq",  ready: data.seq2seq?.ready },
+      { label: "Gemini API", ready: data.gemini?.ready },
     ];
 
     for (const it of items) {
       const li = document.createElement("li");
-      const badge = document.createElement("span");
-      badge.className = "badge " + (it.ready ? "badge-ready" : "badge-off");
-      badge.textContent = it.ready ? "ready" : "off";
-      li.appendChild(badge);
-      const text = document.createElement("span");
-      text.innerHTML = `<strong>${it.label}</strong><br><span style="color:var(--text-muted);font-size:11px">${it.info ?? ""}</span>`;
-      li.appendChild(text);
+      li.className = it.ready ? "is-ready" : "is-off";
+      li.innerHTML = `
+        <span class="status-dot"></span>
+        <span class="status-name">${it.label}</span>
+        <span class="status-state">${it.ready ? "ready" : "off"}</span>
+      `;
       list.appendChild(li);
     }
   } catch (err) {
@@ -76,9 +67,13 @@ function setLoading(on) {
   $("btnSummarize").disabled = on;
 }
 
+let lastSummary = "";
+
 function renderResult(data) {
+  lastSummary = data.summary || "";
   $("result").innerHTML = `<div>${escapeHtml(data.summary || "(kosong)")}</div>`;
   $("resultModel").textContent = `Model: ${data.model}`;
+  $("btnCopy").classList.toggle("hidden", !lastSummary);
 
   $("statInput").textContent = `${data.stats.input_words} kata`;
   $("statSummary").textContent = `${data.stats.summary_words} kata`;
@@ -109,6 +104,66 @@ $("useReference").addEventListener("change", (e) => {
   $("referenceWrap").classList.toggle("hidden", !e.target.checked);
 });
 
+// ---------- Char counter ----------
+function updateCharCounter() {
+  const v = $("inputText").value;
+  const chars = v.length;
+  const words = v.trim() ? v.trim().split(/\s+/).length : 0;
+  $("charCounter").textContent = `${chars.toLocaleString("id-ID")} karakter · ${words.toLocaleString("id-ID")} kata`;
+}
+$("inputText").addEventListener("input", updateCharCounter);
+updateCharCounter();
+
+// ---------- Copy button ----------
+$("btnCopy").addEventListener("click", async () => {
+  if (!lastSummary) return;
+  try {
+    await navigator.clipboard.writeText(lastSummary);
+  } catch {
+    // Fallback for browsers without clipboard API
+    const ta = document.createElement("textarea");
+    ta.value = lastSummary;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch {}
+    document.body.removeChild(ta);
+  }
+  const btn = $("btnCopy");
+  btn.classList.add("copied");
+  btn.querySelector(".copy-label").textContent = "Tersalin";
+  setTimeout(() => {
+    btn.classList.remove("copied");
+    btn.querySelector(".copy-label").textContent = "Salin";
+  }, 1400);
+});
+
+// ---------- File upload ----------
+$("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  const info = $("fileInfo");
+  if (!file) {
+    info.textContent = "Belum ada file dipilih";
+    info.classList.remove("has-file");
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    showError("Ukuran file maksimal 2 MB.");
+    e.target.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    $("inputText").value = String(ev.target.result || "");
+    info.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+    info.classList.add("has-file");
+    showError(null);
+  };
+  reader.onerror = () => {
+    showError("Gagal membaca file.");
+  };
+  reader.readAsText(file, "utf-8");
+});
+
 $("btnClear").addEventListener("click", () => {
   $("inputText").value = "";
   $("referenceText").value = "";
@@ -117,6 +172,9 @@ $("btnClear").addEventListener("click", () => {
   $("stats").classList.add("hidden");
   $("rouge").classList.add("hidden");
   $("resultModel").textContent = "—";
+  $("btnCopy").classList.add("hidden");
+  lastSummary = "";
+  updateCharCounter();
 });
 
 $("btnSummarize").addEventListener("click", async () => {
