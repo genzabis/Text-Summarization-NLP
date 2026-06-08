@@ -31,8 +31,7 @@ async function refreshStatus() {
 
     const items = [
       { label: "TextRank", ready: data.textrank?.ready },
-      { label: "Seq2Seq",  ready: data.seq2seq?.ready },
-      { label: "Gemini API", ready: data.gemini?.ready },
+      { label: "Claude 4.5 Sonnet", ready: data.gemini?.ready },
     ];
 
     for (const it of items) {

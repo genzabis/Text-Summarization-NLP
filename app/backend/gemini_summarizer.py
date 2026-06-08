@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import os
+import json
+import urllib.request
+import urllib.error
 from threading import Lock
 from typing import Optional
 
@@ -18,9 +21,10 @@ _PROMPT_TEMPLATE = (
 
 
 class GeminiSummarizer:
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-1.5-flash") -> None:
+    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None, base_url: Optional[str] = None) -> None:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "").strip()
-        self.model_name = model_name
+        self.model_name = model_name or os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash").strip()
+        self.base_url = base_url or os.getenv("GEMINI_BASE_URL", "").strip()
         self._model = None
         self._lock = Lock()
         self._error: Optional[str] = None
@@ -34,12 +38,17 @@ class GeminiSummarizer:
             "ready": self.is_ready(),
             "model_name": self.model_name,
             "has_api_key": bool(self.api_key),
-            "loaded": self._model is not None,
+            "has_base_url": bool(self.base_url),
+            "loaded": self._model is not None or bool(self.base_url),
             "error": self._error,
         }
 
     # ------------------------------------------------------------------ load
     def _load(self) -> None:
+        if self.base_url:
+            # Jika menggunakan base_url kustom, kita tidak perlu memuat SDK resmi
+            return
+
         with self._lock:
             if self._model is not None:
                 return
@@ -65,9 +74,42 @@ class GeminiSummarizer:
         if not text:
             return ""
         self._load()
-        assert self._model is not None
 
         prompt = _PROMPT_TEMPLATE.format(n_sentences=n_sentences, text=text)
+
+        # Jika base_url di-set, panggil endpoint OpenAI-compatible custom via urllib
+        if self.base_url:
+            url = f"{self.base_url.rstrip('/')}/chat/completions"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}"
+            }
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.3
+            }
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers,
+                method="POST"
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    result = res_data["choices"][0]["message"]["content"]
+                    return (result or "").strip()
+            except urllib.error.HTTPError as e:
+                err_body = e.read().decode("utf-8")
+                raise RuntimeError(f"API Custom HTTP {e.code}: {err_body}")
+            except Exception as e:
+                raise RuntimeError(f"Gagal memanggil API Custom: {e}")
+
+        # Jika tidak, gunakan SDK resmi google-generativeai
+        assert self._model is not None
         response = self._model.generate_content(prompt)
         # google-generativeai mengekspos atribut .text untuk respon teks.
         result = getattr(response, "text", None)

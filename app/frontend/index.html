@@ -41,18 +41,14 @@
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
           Sample Dataset
         </a>
-        <a class="nav-item" data-tab="about">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
-          Tentang
-        </a>
+       
       </nav>
 
       <div class="side-section">
         <div class="side-section-title">Status Model</div>
         <ul class="status-list" id="statusList">
           <li><span class="status-dot"></span><span class="status-name">TextRank</span><span class="status-state">…</span></li>
-          <li><span class="status-dot"></span><span class="status-name">Seq2Seq</span><span class="status-state">…</span></li>
-          <li><span class="status-dot"></span><span class="status-name">Gemini API</span><span class="status-state">…</span></li>
+          <li><span class="status-dot"></span><span class="status-name">Claude 4.5 Sonnet</span><span class="status-state">…</span></li>
         </ul>
       </div>
 
@@ -73,8 +69,7 @@
         <h1>Peringkas Teks Bahasa Indonesia</h1>
         <p class="subtitle">
           Aplikasi peringkas otomatis berbasis dataset <strong>IndoSum</strong>.
-          Bandingkan baseline <em>TextRank</em>, model <em>Seq2Seq</em> kustom,
-          dan <em>Google Gemini</em> dalam satu antarmuka.
+          Bandingkan baseline <em>TextRank</em> dan <em>Claude 4.5 Sonnet</em> dalam satu antarmuka.
         </p>
       </header>
 
@@ -110,8 +105,7 @@
                 <span>Model</span>
                 <select id="modelSelect">
                   <option value="textrank">TextRank · baseline</option>
-                  <option value="seq2seq">Seq2Seq · custom</option>
-                  <option value="gemini">Google Gemini API</option>
+                  <option value="gemini">Claude 4.5 Sonnet API</option>
                 </select>
               </label>
 
@@ -258,7 +252,7 @@
             <h2>Tentang Project</h2>
           </div>
           <p>
-            Aplikasi ini mengimplementasikan tiga pendekatan text summarization
+            Aplikasi ini mengimplementasikan dua pendekatan text summarization
             untuk Bahasa Indonesia di atas dataset
             <strong>IndoSum</strong>:
           </p>
@@ -268,13 +262,7 @@
               kalimat dengan skor TF-IDF + cosine + PageRank.
             </li>
             <li>
-              <strong>Seq2Seq</strong> — encoder-decoder GRU bidirectional dengan
-              <em>Bahdanau attention</em> (PyTorch). Dilatih pada split train
-              IndoSum, dievaluasi via ROUGE.
-            </li>
-            <li>
-              <strong>Google Gemini API</strong> — peringkasan abstraktif via
-              model <code>gemini-1.5-flash</code> menggunakan API key dari
+              <strong>Claude 4.5 Sonnet API</strong> — peringkasan abstraktif menggunakan API key dari
               file <code>.env</code>.
             </li>
           </ul>
@@ -283,7 +271,6 @@
           <ol class="bullets">
             <li>Install dependency: <code>pip install -r app/requirements.txt</code></li>
             <li>Salin <code>app/.env.example</code> menjadi <code>app/.env</code>, isi <code>GEMINI_API_KEY</code>.</li>
-            <li>(Opsional) Latih Seq2Seq: <code>python -m app.train --epochs 5 --max-train 20000</code></li>
             <li>Jalankan server: <code>python -m app.backend.app</code></li>
             <li>Buka <code>http://127.0.0.1:5000</code> di browser.</li>
           </ol>

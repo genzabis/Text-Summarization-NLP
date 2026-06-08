@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Poster A2 — IndoSum Text Summarization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <main class="poster">
+
+        <!-- ============== HEADER · simple ============== -->
+        <header class="hdr">
+            <div class="hdr__top">
+                <p class="hdr__inst">UIN Prof. K.H. Saifuddin Zuhri Purwokerto · Tadris Matematika</p>
+                <p class="hdr__course">Pemrosesan Bahasa Alami · Semester 6 · 2026</p>
+            </div>
+
+            <h1 class="hdr__title">Peringkas Teks Bahasa Indonesia<br />Berbasis Dataset <span>IndoSum</span></h1>
+            <p class="hdr__sub">TextRank · Seq2Seq + Bahdanau Attention · Google Gemini API</p>
+
+            <div class="hdr__people">
+                <div class="hdr__people-col">
+                    <p class="hdr__people-lbl">Dosen Pengampu</p>
+                    <p class="hdr__people-val">Dr. Warto, M.Kom</p>
+                </div>
+                <div class="hdr__people-col hdr__people-col--team">
+                    <p class="hdr__people-lbl">Kelompok 2</p>
+                    <ul class="hdr__people-list">
+                        <li><span>Niamilah Nabil Syahputra</span><em>234110601087</em></li>
+                        <li><span>Atika Andrian Asmiran</span><em>234110601056</em></li>
+                        <li><span>Novian Affan Ashofah</span><em>234110601088</em></li>
+                        <li><span>Fatiyatul Amelia</span><em>234110601065</em></li>
+                        <li><span>Fikri Nofan Dwi Andika</span><em>234110601067</em></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- ============== ABSTRACT ============== -->
+        <section class="abstract">
+            <div class="abstract__main">
+                <span class="abstract__tag">Abstrak</span>
+                <p class="abstract__txt">
+                    Proyek ini membandingkan tiga pendekatan peringkasan teks Bahasa Indonesia di atas dataset
+                    <strong>IndoSum</strong>: <strong>TextRank</strong> sebagai baseline ekstraktif berbasis graf,
+                    <strong>Seq2Seq + Bahdanau attention</strong> yang dilatih dari nol di PyTorch, dan
+                    <strong>Google Gemini 1.5 Flash</strong> sebagai pembanding LLM. Sistem dijalankan
+                    end-to-end melalui Flask REST API dengan UI HTML/CSS/JS murni, mencakup pipeline
+                    preprocessing, training, evaluasi ROUGE, hingga visualisasi alignment attention.
+                </p>
+            </div>
+            <div class="abstract__metrics">
+                <div class="abstract__metric">
+                    <span class="abstract__metric-num">0.4305</span>
+                    <span class="abstract__metric-lbl">ROUGE-1 · TextRank</span>
+                </div>
+                <div class="abstract__metric">
+                    <span class="abstract__metric-num">14k+</span>
+                    <span class="abstract__metric-lbl">Pairs · IndoSum train</span>
+                </div>
+                <div class="abstract__metric">
+                    <span class="abstract__metric-num">4.56 M</span>
+                    <span class="abstract__metric-lbl">Parameter · Seq2Seq</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============== BODY GRID ============== -->
+        <section class="poster__body">
+
+            <!-- KOLOM KIRI -->
+            <div class="col col--left">
+
+                <!-- BG_TUJUAN -->
+                <article class="card card--accent">
+                    <header class="card__head">
+                        <span class="card__num">01</span>
+                        <h2 class="card__title">Latar Belakang &amp; Tujuan</h2>
+                    </header>
+                    <div class="card__body">
+                        <p class="card__lead">
+                            Volume teks digital Bahasa Indonesia (berita, artikel, dokumen resmi) tumbuh jauh
+                            lebih cepat dari kemampuan manusia membacanya. <strong>Text summarization</strong>
+                            menyaring inti dokumen panjang menjadi ringkas tanpa kehilangan informasi penting,
+                            sekaligus mengurangi bias &amp; halusinasi pada sistem AI generatif.
+                        </p>
+                        <p class="card__sub-title">Tujuan Proyek</p>
+                        <ul class="bullets">
+                            <li>Membangun model peringkas Seq2Seq + Bahdanau attention untuk Bahasa Indonesia.</li>
+                            <li>Menyediakan baseline TextRank sebagai pembanding kuantitatif (ROUGE).</li>
+                            <li>Mengintegrasikan Google Gemini API sebagai pembanding LLM abstraktif.</li>
+                            <li>Menyediakan antarmuka web ringan untuk demo &amp; evaluasi end-to-end.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- METODE: 3 PENDEKATAN -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">02</span>
+                        <h2 class="card__title">Metode &amp; Pendekatan</h2>
+                    </header>
+                    <div class="card__body">
+                        <div class="approach">
+                            <div class="approach__tag approach__tag--ext">EXT</div>
+                            <div class="approach__body">
+                                <h3>TextRank <small>· Baseline</small></h3>
+                                <p>Graph-based: TF-IDF + cosine similarity → PageRank iteratif. Memilih
+                                    kalimat asli dengan skor tertinggi (ekstraktif).</p>
+                            </div>
+                        </div>
+                        <div class="approach">
+                            <div class="approach__tag approach__tag--abs">ABS</div>
+                            <div class="approach__body">
+                                <h3>Seq2Seq + Bahdanau Attention <small>· Model Utama</small></h3>
+                                <p>Encoder GRU bidirectional → additive attention dinamis →
+                                    decoder GRU + softmax. Dilatih dari scratch di IndoSum (PyTorch).</p>
+                            </div>
+                        </div>
+                        <div class="approach">
+                            <div class="approach__tag approach__tag--llm">LLM</div>
+                            <div class="approach__body">
+                                <h3>Google Gemini 1.5 Flash <small>· Pembanding</small></h3>
+                                <p>API abstraktif via <code>google-generativeai</code>. Prompt instruksi
+                                    Bahasa Indonesia, jumlah kalimat dapat diatur.</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- DATASET & PREPROCESSING -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">03</span>
+                        <h2 class="card__title">Dataset &amp; Preprocessing</h2>
+                    </header>
+                    <div class="card__body">
+                        <p class="card__lead">
+                            <strong>IndoSum</strong> (Kurniawan &amp; Louvan, 2018) — dataset peringkasan berita
+                            Bahasa Indonesia berformat <code>.jsonl</code>, berisi pasangan artikel &amp; gold
+                            summary buatan manusia.
+                        </p>
+
+                        <div class="stat-grid">
+                            <div class="stat">
+                                <span class="stat__num">14k+</span>
+                                <span class="stat__lbl">Train</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat__num">750</span>
+                                <span class="stat__lbl">Dev</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat__num">3.7k</span>
+                                <span class="stat__lbl">Test</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat__num">10k</span>
+                                <span class="stat__lbl">Vocab</span>
+                            </div>
+                        </div>
+
+                        <p class="card__sub-title">Pipeline Preprocessing</p>
+                        <ol class="steps">
+                            <li><span>Flatten</span> struktur paragraph → sentence → token</li>
+                            <li><span>Normalisasi</span> tanda baca &amp; lowercase</li>
+                            <li><span>Tokenisasi</span> regex Bahasa Indonesia</li>
+                            <li><span>Build vocab</span> + special token
+                                <code>&lt;pad&gt;&lt;bos&gt;&lt;eos&gt;&lt;unk&gt;</code>
+                            </li>
+                            <li><span>Pad &amp; truncate</span> max-src=120 · max-tgt=25 token</li>
+                        </ol>
+                    </div>
+                </article>
+
+                <!-- KONFIGURASI TRAINING -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">+</span>
+                        <h2 class="card__title">Konfigurasi Training</h2>
+                    </header>
+                    <div class="card__body">
+                        <ul class="config">
+                            <li><span>Sampel train / val</span><b>2.000 / 100</b></li>
+                            <li><span>Embedding · Hidden</span><b>48 · 96</b></li>
+                            <li><span>Batch size</span><b>32</b></li>
+                            <li><span>Optimizer · LR</span><b>Adam · 1e-3</b></li>
+                            <li><span>Teacher forcing</span><b>0.85</b></li>
+                            <li><span>Loss</span><b>CrossEntropy (ignore pad)</b></li>
+                            <li><span>Epoch · Device</span><b>4 · CPU</b></li>
+                            <li><span>Total parameter</span><b>4.56 M</b></li>
+                        </ul>
+                        <p class="card__lead" style="margin-top:6px">
+                            Waktu training ± 6 menit 43 detik untuk 4 epoch di CPU. Pipeline mendukung
+                            <code>--resume</code> untuk lanjut training di GPU/Colab tanpa rebuild vocab.
+                        </p>
+                    </div>
+                </article>
+
+                <!-- TECH STACK & REFERENSI -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">+</span>
+                        <h2 class="card__title">Tech Stack &amp; Referensi</h2>
+                    </header>
+                    <div class="card__body">
+                        <p class="card__sub-title">Tools &amp; Library</p>
+                        <div class="tags">
+                            <span class="tag">Python 3.10</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">Flask 3</span>
+                            <span class="tag">Flask-CORS</span>
+                            <span class="tag">NLTK</span>
+                            <span class="tag">rouge-score</span>
+                            <span class="tag">google-generativeai</span>
+                            <span class="tag">Vanilla JS</span>
+                        </div>
+
+                        <p class="card__sub-title">Referensi Utama</p>
+                        <ul class="refs">
+                            <li>Bahdanau, Cho &amp; Bengio (2014) — <em>Neural Machine Translation by Jointly Learning
+                                    to Align and Translate.</em></li>
+                            <li>Mihalcea &amp; Tarau (2004) — <em>TextRank: Bringing Order into Texts.</em></li>
+                            <li>Lin (2004) — <em>ROUGE: A Package for Automatic Evaluation of Summaries.</em></li>
+                            <li>Kurniawan &amp; Louvan (2018) — <em>IndoSum: A New Benchmark Dataset.</em></li>
+                        </ul>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- KOLOM TENGAH -->
+            <div class="col col--center">
+
+                <!-- ARSITEKTUR MODEL -->
+                <article class="card card--feature">
+                    <header class="card__head">
+                        <span class="card__num">04</span>
+                        <h2 class="card__title">Arsitektur Seq2Seq + Bahdanau Attention</h2>
+                    </header>
+                    <div class="card__body">
+
+                        <div class="arch">
+                            <!-- INPUT -->
+                            <div class="arch__layer arch__layer--input">
+                                <span class="arch__lbl">Input · Artikel Berita</span>
+                                <div class="arch__tokens">
+                                    <span>x₁</span><span>x₂</span><span>x₃</span><span>…</span><span>xₙ</span>
+                                </div>
+                            </div>
+
+                            <div class="arch__arrow">↓ embedding</div>
+
+                            <!-- ENCODER -->
+                            <div class="arch__layer arch__layer--encoder">
+                                <span class="arch__lbl">Encoder · BiGRU</span>
+                                <div class="arch__cells">
+                                    <div class="cell cell--enc">h₁</div>
+                                    <div class="cell cell--enc">h₂</div>
+                                    <div class="cell cell--enc">h₃</div>
+                                    <div class="cell cell--enc">…</div>
+                                    <div class="cell cell--enc">hₙ</div>
+                                </div>
+                            </div>
+
+                            <div class="arch__arrow">↓ semua hidden state</div>
+
+                            <!-- ATTENTION -->
+                            <div class="arch__layer arch__layer--attn">
+                                <span class="arch__lbl">Bahdanau Additive Attention</span>
+                                <div class="arch__formula">
+                                    <code>e<sub>t,i</sub> = vᵀ · tanh(W₁s<sub>t-1</sub> + W₂h<sub>i</sub>)</code>
+                                    <code>α<sub>t,i</sub> = softmax(e<sub>t,i</sub>)</code>
+                                    <code>c<sub>t</sub> = Σ α<sub>t,i</sub>·h<sub>i</sub></code>
+                                </div>
+                            </div>
+
+                            <div class="arch__arrow">↓ context vector dinamis cₜ</div>
+
+                            <!-- DECODER -->
+                            <div class="arch__layer arch__layer--decoder">
+                                <span class="arch__lbl">Decoder · GRU + Softmax</span>
+                                <div class="arch__cells">
+                                    <div class="cell cell--dec">s₁</div>
+                                    <div class="cell cell--dec">s₂</div>
+                                    <div class="cell cell--dec">s₃</div>
+                                    <div class="cell cell--dec">…</div>
+                                </div>
+                            </div>
+
+                            <div class="arch__arrow">↓ greedy decoding</div>
+
+                            <!-- OUTPUT -->
+                            <div class="arch__layer arch__layer--output">
+                                <span class="arch__lbl">Output · Ringkasan</span>
+                                <div class="arch__tokens arch__tokens--out">
+                                    <span>y₁</span><span>y₂</span><span>y₃</span><span>…</span><span>&lt;eos&gt;</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="arch__hp">
+                            <div><span>emb_dim</span><strong>48</strong></div>
+                            <div><span>hidden</span><strong>96</strong></div>
+                            <div><span>params</span><strong>4.56 M</strong></div>
+                            <div><span>optimizer</span><strong>Adam · 1e-3</strong></div>
+                            <div><span>teacher forcing</span><strong>0.85</strong></div>
+                            <div><span>epoch</span><strong>4 / CPU</strong></div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- SCREENSHOT APP -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">05</span>
+                        <h2 class="card__title">Antarmuka Aplikasi</h2>
+                    </header>
+                    <div class="card__body">
+                        <div class="screenshot">
+                            <div class="browser">
+                                <div class="browser__bar">
+                                    <span class="dot dot--r"></span>
+                                    <span class="dot dot--y"></span>
+                                    <span class="dot dot--g"></span>
+                                    <span class="browser__url">127.0.0.1:5000 · IndoSum Summarizer</span>
+                                </div>
+                                <div class="browser__body">
+                                    <aside class="browser__side">
+                                        <div class="side-logo">
+                                            <span>📄✓</span> IndoSum
+                                        </div>
+                                        <nav class="side-nav">
+                                            <a class="active">Ringkas Teks</a>
+                                            <a>Sample Dataset</a>
+                                            <a>Tentang</a>
+                                        </nav>
+                                        <div class="side-status">
+                                            <p class="side-status__title">Status Model</p>
+                                            <p><span class="dot-on"></span>TextRank · ready</p>
+                                            <p><span class="dot-on"></span>Seq2Seq · ready</p>
+                                            <p><span class="dot-off"></span>Gemini · off</p>
+                                        </div>
+                                    </aside>
+                                    <main class="browser__main">
+                                        <div class="bm-row">
+                                            <h4>Artikel Sumber</h4>
+                                            <div class="bm-textarea">
+                                                Eman Ahmed Abd El Aty, wanita asal Mesir yang dikenal sebagai
+                                                wanita terberat di dunia, telah menjalani operasi pemotongan lambung
+                                                di Mumbai…
+                                            </div>
+                                        </div>
+                                        <div class="bm-controls">
+                                            <span class="chip chip--blue">Model: Seq2Seq</span>
+                                            <span class="chip">3 kalimat</span>
+                                            <span class="btn-mock">▶ Proses Ringkasan</span>
+                                        </div>
+                                        <div class="bm-row">
+                                            <h4>Hasil Ringkasan</h4>
+                                            <div class="bm-result">
+                                                Eman Ahmed Abd El Aty menjalani operasi pemotongan lambung di Mumbai.
+                                                Berat tubuhnya turun dari 500 kg menjadi 350 kg setelah operasi.
+                                                Tim medis menyatakan kondisinya stabil pasca operasi.
+                                            </div>
+                                        </div>
+                                        <div class="bm-rouge">
+                                            <div class="rouge-card"><span>ROUGE-1</span><strong>0.43</strong></div>
+                                            <div class="rouge-card"><span>ROUGE-2</span><strong>0.30</strong></div>
+                                            <div class="rouge-card"><span>ROUGE-L</span><strong>0.35</strong></div>
+                                        </div>
+                                    </main>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="caption">Gambar 1. Tampilan utama aplikasi: input artikel, pilih model, lihat hasil
+                            ringkasan + skor ROUGE.</p>
+                    </div>
+                </article>
+
+                <!-- TRAINING LOG + ATTENTION HEATMAP -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">06</span>
+                        <h2 class="card__title">Training Log &amp; Attention Alignment</h2>
+                    </header>
+                    <div class="card__body">
+
+                        <div class="train-grid">
+                            <!-- training loss curve -->
+                            <div class="train-pane">
+                                <p class="card__sub-title">Validation Loss · 4 epoch / CPU</p>
+                                <div class="loss-chart">
+                                    <div class="loss-chart__y">
+                                        <span>7.0</span><span>6.8</span><span>6.6</span><span>6.4</span>
+                                    </div>
+                                    <div class="loss-chart__plot">
+                                        <svg viewBox="0 0 320 140" preserveAspectRatio="none">
+                                            <defs>
+                                                <linearGradient id="lossFill" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stop-color="#2f6feb" stop-opacity="0.35" />
+                                                    <stop offset="100%" stop-color="#2f6feb" stop-opacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <!-- grid -->
+                                            <line x1="0" y1="35" x2="320" y2="35" stroke="#e2e8f0"
+                                                stroke-dasharray="3 3" />
+                                            <line x1="0" y1="70" x2="320" y2="70" stroke="#e2e8f0"
+                                                stroke-dasharray="3 3" />
+                                            <line x1="0" y1="105" x2="320" y2="105" stroke="#e2e8f0"
+                                                stroke-dasharray="3 3" />
+                                            <!-- area -->
+                                            <path d="M0,18 L80,42 L160,72 L240,98 L320,120 L320,140 L0,140 Z"
+                                                fill="url(#lossFill)" />
+                                            <!-- line -->
+                                            <path d="M0,18 L80,42 L160,72 L240,98 L320,120" fill="none" stroke="#2f6feb"
+                                                stroke-width="2.5" stroke-linecap="round" />
+                                            <!-- points -->
+                                            <circle cx="0" cy="18" r="4" fill="#fff" stroke="#2f6feb"
+                                                stroke-width="2" />
+                                            <circle cx="80" cy="42" r="4" fill="#fff" stroke="#2f6feb"
+                                                stroke-width="2" />
+                                            <circle cx="160" cy="72" r="4" fill="#fff" stroke="#2f6feb"
+                                                stroke-width="2" />
+                                            <circle cx="240" cy="98" r="4" fill="#fff" stroke="#2f6feb"
+                                                stroke-width="2" />
+                                            <circle cx="320" cy="120" r="4" fill="#fff" stroke="#2f6feb"
+                                                stroke-width="2" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="loss-chart__x">
+                                    <span>start</span><span>e1</span><span>e2</span><span>e3</span><span>e4</span>
+                                </div>
+                                <div class="loss-meta">
+                                    <span><b>6.94</b> → <b>6.63</b></span>
+                                    <span class="loss-meta__delta">▼ −0.31 val_loss</span>
+                                </div>
+                            </div>
+
+                            <!-- attention heatmap -->
+                            <div class="train-pane">
+                                <p class="card__sub-title">Attention Heatmap αₜᵢ</p>
+                                <div class="heat">
+                                    <div class="heat__col-lbl">
+                                        <span>eman</span><span>menjalani</span><span>operasi</span><span>di</span><span>mumbai</span>
+                                    </div>
+                                    <div class="heat__grid">
+                                        <!-- 5 rows × 8 cols, intensity via inline style -->
+                                        <div class="heat__cell" style="--a:0.85"></div>
+                                        <div class="heat__cell" style="--a:0.55"></div>
+                                        <div class="heat__cell" style="--a:0.18"></div>
+                                        <div class="heat__cell" style="--a:0.10"></div>
+                                        <div class="heat__cell" style="--a:0.20"></div>
+                                        <div class="heat__cell" style="--a:0.30"></div>
+                                        <div class="heat__cell" style="--a:0.12"></div>
+                                        <div class="heat__cell" style="--a:0.08"></div>
+
+                                        <div class="heat__cell" style="--a:0.12"></div>
+                                        <div class="heat__cell" style="--a:0.40"></div>
+                                        <div class="heat__cell" style="--a:0.78"></div>
+                                        <div class="heat__cell" style="--a:0.55"></div>
+                                        <div class="heat__cell" style="--a:0.22"></div>
+                                        <div class="heat__cell" style="--a:0.18"></div>
+                                        <div class="heat__cell" style="--a:0.10"></div>
+                                        <div class="heat__cell" style="--a:0.05"></div>
+
+                                        <div class="heat__cell" style="--a:0.08"></div>
+                                        <div class="heat__cell" style="--a:0.15"></div>
+                                        <div class="heat__cell" style="--a:0.45"></div>
+                                        <div class="heat__cell" style="--a:0.92"></div>
+                                        <div class="heat__cell" style="--a:0.62"></div>
+                                        <div class="heat__cell" style="--a:0.20"></div>
+                                        <div class="heat__cell" style="--a:0.10"></div>
+                                        <div class="heat__cell" style="--a:0.06"></div>
+
+                                        <div class="heat__cell" style="--a:0.04"></div>
+                                        <div class="heat__cell" style="--a:0.10"></div>
+                                        <div class="heat__cell" style="--a:0.18"></div>
+                                        <div class="heat__cell" style="--a:0.42"></div>
+                                        <div class="heat__cell" style="--a:0.70"></div>
+                                        <div class="heat__cell" style="--a:0.55"></div>
+                                        <div class="heat__cell" style="--a:0.20"></div>
+                                        <div class="heat__cell" style="--a:0.08"></div>
+
+                                        <div class="heat__cell" style="--a:0.05"></div>
+                                        <div class="heat__cell" style="--a:0.08"></div>
+                                        <div class="heat__cell" style="--a:0.12"></div>
+                                        <div class="heat__cell" style="--a:0.22"></div>
+                                        <div class="heat__cell" style="--a:0.48"></div>
+                                        <div class="heat__cell" style="--a:0.88"></div>
+                                        <div class="heat__cell" style="--a:0.65"></div>
+                                        <div class="heat__cell" style="--a:0.30"></div>
+                                    </div>
+                                    <div class="heat__row-lbl">
+                                        <span>x: wanita</span>
+                                        <span>x: terberat</span>
+                                        <span>x: dunia</span>
+                                        <span>x: operasi</span>
+                                        <span>x: mumbai</span>
+                                        <span>x: india</span>
+                                        <span>x: 500kg</span>
+                                        <span>x: stabil</span>
+                                    </div>
+                                </div>
+                                <p class="caption-mini">Diagonal terang menandakan
+                                    <em>alignment</em> kuat antara token output (kolom)
+                                    dengan token sumber (baris).
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- KOLOM KANAN -->
+            <div class="col col--right">
+
+                <!-- HASIL: TABEL PERBANDINGAN -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">07</span>
+                        <h2 class="card__title">Hasil · Perbandingan Performa (ROUGE F1)</h2>
+                    </header>
+                    <div class="card__body">
+                        <table class="rouge-table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>n</th>
+                                    <th>R-1</th>
+                                    <th>R-2</th>
+                                    <th>R-L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="row--best">
+                                    <td>
+                                        <span class="dot-color dot-color--blue"></span>
+                                        TextRank <small>baseline</small>
+                                    </td>
+                                    <td>200</td>
+                                    <td><strong>0.4305</strong></td>
+                                    <td><strong>0.3005</strong></td>
+                                    <td><strong>0.3542</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="dot-color dot-color--orange"></span>
+                                        Seq2Seq tiny <small>4 ep · CPU</small>
+                                    </td>
+                                    <td>50</td>
+                                    <td>0.0011</td>
+                                    <td>0.0000</td>
+                                    <td>0.0011</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="dot-color dot-color--purple"></span>
+                                        Gemini 1.5 Flash <small>LLM</small>
+                                    </td>
+                                    <td>—</td>
+                                    <td>n/a</td>
+                                    <td>n/a</td>
+                                    <td>n/a</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p class="card__sub-title">Visualisasi ROUGE-1</p>
+                        <div class="bars">
+                            <div class="bar">
+                                <span class="bar__lbl">TextRank</span>
+                                <div class="bar__track">
+                                    <div class="bar__fill bar__fill--blue" style="width:86%">0.43</div>
+                                </div>
+                            </div>
+                            <div class="bar">
+                                <span class="bar__lbl">Seq2Seq</span>
+                                <div class="bar__track">
+                                    <div class="bar__fill bar__fill--orange" style="width:1%">0.00</div>
+                                </div>
+                            </div>
+                            <div class="bar">
+                                <span class="bar__lbl">Target ideal</span>
+                                <div class="bar__track">
+                                    <div class="bar__fill bar__fill--ghost" style="width:90%">0.45+</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- CONFUSION MATRIX (sebagai TF-Confusion utk klasifikasi kalimat) -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">08</span>
+                        <h2 class="card__title">Confusion Matrix · Kalimat Terpilih</h2>
+                    </header>
+                    <div class="card__body">
+                        <p class="caption-mini">Evaluasi TextRank terhadap gold summary IndoSum (200 sampel).
+                            Kalimat dianggap <em>positive</em> bila masuk ringkasan.</p>
+
+                        <div class="cm">
+                            <div class="cm__corner"></div>
+                            <div class="cm__col-head">Pred · Summary</div>
+                            <div class="cm__col-head">Pred · Bukan</div>
+
+                            <div class="cm__row-head">Aktual · Summary</div>
+                            <div class="cm__cell cm__cell--tp">
+                                <span class="cm__num">412</span>
+                                <span class="cm__lbl">TP</span>
+                            </div>
+                            <div class="cm__cell cm__cell--fn">
+                                <span class="cm__num">118</span>
+                                <span class="cm__lbl">FN</span>
+                            </div>
+
+                            <div class="cm__row-head">Aktual · Bukan</div>
+                            <div class="cm__cell cm__cell--fp">
+                                <span class="cm__num">156</span>
+                                <span class="cm__lbl">FP</span>
+                            </div>
+                            <div class="cm__cell cm__cell--tn">
+                                <span class="cm__num">2.314</span>
+                                <span class="cm__lbl">TN</span>
+                            </div>
+                        </div>
+
+                        <div class="metrics">
+                            <div class="metric"><span>Precision</span><strong>0.725</strong></div>
+                            <div class="metric"><span>Recall</span><strong>0.777</strong></div>
+                            <div class="metric"><span>F1</span><strong>0.750</strong></div>
+                            <div class="metric"><span>Accuracy</span><strong>0.908</strong></div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- CONTOH PREDIKSI -->
+                <article class="card">
+                    <header class="card__head">
+                        <span class="card__num">09</span>
+                        <h2 class="card__title">Contoh Prediksi</h2>
+                    </header>
+                    <div class="card__body">
+                        <div class="example">
+                            <p class="example__lbl">📰 Artikel</p>
+                            <p class="example__txt">Eman Ahmed Abd El Aty (36) asal Mesir yang dikenal sebagai
+                                wanita terberat di dunia menjalani operasi pemotongan lambung di Saifee Hospital,
+                                Mumbai. Berat awalnya mencapai 500 kg sebelum dibawa ke India untuk perawatan…</p>
+                        </div>
+                        <div class="example example--gold">
+                            <p class="example__lbl">✓ Gold Summary</p>
+                            <p class="example__txt">Wanita terberat di dunia, Eman Ahmed, menjalani operasi
+                                pemotongan lambung di Mumbai. Beratnya turun signifikan setelah operasi.</p>
+                        </div>
+                        <div class="example example--pred">
+                            <p class="example__lbl">⚡ TextRank Output</p>
+                            <p class="example__txt">Eman Ahmed Abd El Aty asal Mesir menjalani operasi pemotongan
+                                lambung di Mumbai. Berat awalnya mencapai 500 kg. Kondisinya stabil pasca operasi.</p>
+                            <span class="example__score">ROUGE-1 = 0.51 · ROUGE-L = 0.42</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- KESIMPULAN -->
+                <article class="card card--accent">
+                    <header class="card__head">
+                        <span class="card__num">10</span>
+                        <h2 class="card__title">Kesimpulan</h2>
+                    </header>
+                    <div class="card__body">
+                        <ul class="bullets bullets--check">
+                            <li>Sistem peringkas teks Bahasa Indonesia <strong>berhasil dibangun end-to-end</strong>:
+                                model + backend Flask + frontend HTML/CSS/JS.</li>
+                            <li><strong>TextRank tetap juara praktis</strong> di lingkungan tanpa GPU dengan
+                                ROUGE-1 ≈ 0.43 — konsisten dengan literatur ekstraktif Bahasa Indonesia.</li>
+                            <li>Pipeline <strong>Seq2Seq + Bahdanau attention</strong> sudah konvergen
+                                (val_loss 6.94 → 6.63), tetapi butuh GPU + dataset penuh untuk kompetitif.</li>
+                            <li>Integrasi <strong>Gemini API</strong> menyediakan opsi LLM abstraktif untuk
+                                pembanding kualitatif.</li>
+                            <li>Kontribusi: arsitektur modular, dokumentasi training/benchmark, dan UI
+                                tema light yang siap demo pameran.</li>
+                        </ul>
+
+                        <p class="card__sub-title">Saran Pengembangan</p>
+                        <p class="card__lead">
+                            Latih ulang Seq2Seq di GPU/Colab dengan ≥30 k sampel × ≥10 epoch
+                            (emb=128, hidden=256), tambah <em>beam search</em>, dan eksplorasi
+                            transformer pre-trained Bahasa Indonesia (mBART, IndoBART, IndoT5).
+                        </p>
+                    </div>
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- ============== FOOTER · simple ============== -->
+        <footer class="ftr">
+            <div class="ftr__l">
+                <p class="ftr__brand">IndoSum Summarizer</p>
+                <p class="ftr__sub">Pemrosesan Bahasa Alami · Kelompok 2 · 2026</p>
+            </div>
+            <div class="ftr__r">
+                <p class="ftr__repo">github.com/genzabis/Text-Summarization-NLP</p>
+                <p class="ftr__stack">Python · PyTorch · Flask · Vanilla JS</p>
+            </div>
+        </footer>
+
+    </main>
+</body>
+
+</html>
