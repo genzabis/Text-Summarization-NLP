@@ -1,0 +1,15 @@
+.git
+.gitignore
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+.venv/
+venv/
+app/.env
+app/__pycache__/
+app/**/__pycache__/
+
+# Large/non-runtime artifacts that are not needed by the web app container.
+Laporan_Project_IndoSum.docx
+design/

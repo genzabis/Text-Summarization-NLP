@@ -45,6 +45,99 @@ python -m app.backend.app
 # 4. buka http://127.0.0.1:5000 di browser
 ```
 
+## Deploy ke VPS dengan Docker
+
+Konfigurasi Docker tersedia di root project:
+
+- `Dockerfile` untuk build image aplikasi Flask + frontend statis.
+- `docker-compose.yml` untuk menjalankan container di VPS.
+- `.dockerignore` untuk mengecilkan build context dan menjaga `.env` tidak ikut masuk image.
+
+File `app/.env` bersifat opsional untuk TextRank, tapi tetap disarankan dibuat di VPS supaya konfigurasi environment jelas. Jika file ini tidak ada, container tetap memakai default environment dari `docker-compose.yml`.
+
+### 1. Persiapan di VPS
+
+Install Docker dan plugin Compose di VPS, lalu clone/copy project ini ke server:
+
+```bash
+git clone https://github.com/genzabis/Text-Summarization-NLP.git
+cd Text-Summarization-NLP
+```
+
+Kalau project sudah ada di VPS, cukup masuk ke folder project dan pull versi terbaru:
+
+```bash
+git pull
+```
+
+### 2. Setup environment
+
+```bash
+cp app/.env.example app/.env
+nano app/.env
+```
+
+Minimal pastikan konfigurasi server seperti ini:
+
+```env
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5000
+FLASK_DEBUG=False
+INDOSUM_DIR=/app
+SEQ2SEQ_CHECKPOINT=/app/models/checkpoints/seq2seq_best.pt
+SEQ2SEQ_VOCAB=/app/models/checkpoints/vocab.json
+```
+
+Jika ingin memakai Gemini, isi juga:
+
+```env
+GEMINI_API_KEY=isi_api_key_gemini
+```
+
+> Catatan: file `app/.env` tidak dimasukkan ke image Docker dan jangan di-commit ke Git.
+
+### 3. Build dan jalankan container
+
+```bash
+docker compose --env-file app/.env up -d --build
+```
+
+Kalau belum butuh Gemini dan tidak membuat `app/.env`, jalankan:
+
+```bash
+docker compose up -d --build
+```
+
+Cek status dan log:
+
+```bash
+docker compose ps
+docker compose logs -f indosum-summarizer
+```
+
+Aplikasi akan tersedia di:
+
+```text
+http://IP_VPS:5000
+```
+
+### 4. Update aplikasi di VPS
+
+```bash
+git pull
+docker compose --env-file app/.env up -d --build
+```
+
+### 5. Stop aplikasi
+
+```bash
+docker compose down
+```
+
+### Opsional: reverse proxy domain
+
+Jika punya domain, arahkan domain ke IP VPS lalu pasang Nginx/Caddy sebagai reverse proxy dari port `80/443` ke container `127.0.0.1:5000`.
+
 ## Benchmark ROUGE
 
 Reproduksi baseline TextRank pada test set:

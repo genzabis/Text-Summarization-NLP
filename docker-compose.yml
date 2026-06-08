@@ -1,0 +1,25 @@
+services:
+  indosum-summarizer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: indosum-summarizer
+    restart: unless-stopped
+    env_file:
+      - path: app/.env
+        required: false
+    environment:
+      FLASK_HOST: 0.0.0.0
+      FLASK_PORT: 5000
+      FLASK_DEBUG: "False"
+      INDOSUM_DIR: /app
+      SEQ2SEQ_CHECKPOINT: /app/models/checkpoints/seq2seq_best.pt
+      SEQ2SEQ_VOCAB: /app/models/checkpoints/vocab.json
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/status', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
