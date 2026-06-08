@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IndoSum Summarizer · Seq2Seq + TextRank + Gemini</title>
+  <title>Text Summarization · Seq2Seq + TextRank + Gemini</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4.0" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%235e91ff'/><stop offset='1' stop-color='%231f5ad6'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><path d='M30 30h28M30 47h28M30 64h18' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='72' cy='66' r='14' fill='white'/><path d='M65 66l5 5 9-10' stroke='%231f5ad6' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>" />
 </head>
 <body>
@@ -27,8 +27,8 @@
           </svg>
         </div>
         <div class="brand-text">
-          <div class="brand-title">IndoSum</div>
-          <div class="brand-sub">Kelompok 2 · PBA</div>
+          <div class="brand-title">Text Summarization</div>
+          <div class="brand-sub">Natural Language Processing</div>
         </div>
       </div>
 
@@ -48,8 +48,18 @@
         <div class="side-section-title">Status Model</div>
         <ul class="status-list" id="statusList">
           <li><span class="status-dot"></span><span class="status-name">TextRank</span><span class="status-state">…</span></li>
-          <li><span class="status-dot"></span><span class="status-name">Claude 4.5 Sonnet</span><span class="status-state">…</span></li>
+          <li><span class="status-dot"></span><span class="status-name">Seq2Seq</span><span class="status-state">…</span></li>
+          <li><span class="status-dot"></span><span class="status-name">Google Gemini</span><span class="status-state">…</span></li>
         </ul>
+      </div>
+
+      <div class="side-section">
+        <button id="themeToggle" class="btn btn-ghost" type="button" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 12.5px; border-color: var(--border); background: var(--surface-2);">
+          <svg id="themeIcon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--ink-soft);">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+          <span id="themeLabel" style="color: var(--ink-soft); font-weight: 500;">Mode Gelap</span>
+        </button>
       </div>
 
       <div class="side-foot">
@@ -69,7 +79,7 @@
         <h1>Peringkas Teks Bahasa Indonesia</h1>
         <p class="subtitle">
           Aplikasi peringkas otomatis berbasis dataset <strong>IndoSum</strong>.
-          Bandingkan baseline <em>TextRank</em> dan <em>Claude 4.5 Sonnet</em> dalam satu antarmuka.
+          Bandingkan baseline <em>TextRank</em>, <em>Seq2Seq</em>, dan <em>Google Gemini</em> dalam satu antarmuka.
         </p>
       </header>
 
@@ -80,24 +90,24 @@
           <div class="card">
             <div class="card-header">
               <h2>Input Teks</h2>
-              <div class="hint">Tempel artikel atau muat sample IndoSum</div>
+              <div class="hint">Tempel artikel atau muat sample teks</div>
             </div>
 
             <div class="textarea-wrap">
               <textarea
                 id="inputText"
                 class="input-area"
-                placeholder="Tempel artikel berita berbahasa Indonesia di sini, atau gunakan tombol Unggah .txt / Muat Sample IndoSum di bawah."
+                placeholder="Tempel artikel berita berbahasa Indonesia di sini, atau gunakan tombol Unggah .txt / Muat Sample Teks di bawah."
               ></textarea>
               <div class="char-counter" id="charCounter">0 karakter · 0 kata</div>
             </div>
 
             <div class="upload-row">
               <label for="fileInput" class="btn btn-ghost upload-btn">
-                <span class="upload-icon">↑</span> Unggah .txt
+                <span class="upload-icon">↑</span> Unggah File
               </label>
-              <input id="fileInput" type="file" accept=".txt,text/plain" hidden />
-              <span id="fileInfo" class="file-info">Belum ada file dipilih</span>
+              <input id="fileInput" type="file" accept=".txt,.pdf,.docx" hidden />
+              <span id="fileInfo" class="file-info">Dukung .txt, .pdf, .docx (Maks. 2MB)</span>
             </div>
 
             <div class="control-row">
@@ -105,7 +115,8 @@
                 <span>Model</span>
                 <select id="modelSelect">
                   <option value="textrank">TextRank · baseline</option>
-                  <option value="gemini">Claude 4.5 Sonnet API</option>
+                  <option value="seq2seq">Seq2Seq</option>
+                  <option value="gemini">Google Gemini API</option>
                 </select>
               </label>
 
@@ -138,13 +149,13 @@
             </div>
 
             <div class="actions">
+              <button id="btnLoadSample" class="btn btn-ghost">
+                Muat Sample Teks
+              </button>
+              <button id="btnClear" class="btn btn-ghost">Bersihkan</button>
               <button id="btnSummarize" class="btn btn-primary">
                 <span class="btn-icon">▶</span> Proses Ringkasan
               </button>
-              <button id="btnLoadSample" class="btn btn-ghost">
-                Muat Sample IndoSum
-              </button>
-              <button id="btnClear" class="btn btn-ghost">Bersihkan</button>
             </div>
 
             <div id="error" class="error hidden"></div>
@@ -157,17 +168,12 @@
               <div class="hint" id="resultModel">—</div>
             </div>
 
-            <div id="loadingBar" class="loading hidden">
-              <div class="loading-bar"></div>
-              <span>Sedang meringkas…</span>
-            </div>
-
             <div class="result-wrap">
-              <div id="result" class="result-area">
-                <div class="placeholder">
-                  Ringkasan akan muncul di sini setelah Anda menekan tombol Ringkas.
-                </div>
+              <div id="loadingBar" class="loading hidden">
+                <div class="loading-bar"></div>
+                <span>Sedang meringkas…</span>
               </div>
+              <div id="result" class="result-area"><div class="placeholder">Ringkasan akan muncul di sini setelah Anda menekan tombol Ringkas.</div></div>
               <button id="btnCopy" class="copy-btn hidden" type="button" title="Salin ringkasan">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
                 <span class="copy-label">Salin</span>
@@ -208,7 +214,7 @@
       <section class="tab hidden" id="tab-dataset">
         <div class="card">
           <div class="card-header">
-            <h2>Sample Dataset IndoSum</h2>
+            <h2>Sample Dataset</h2>
             <div class="hint">Telusuri artikel + gold summary dari file <code>.jsonl</code></div>
           </div>
 
@@ -234,14 +240,10 @@
           <div id="sampleMeta" class="meta hidden"></div>
 
           <h3>Artikel</h3>
-          <div id="sampleArticle" class="result-area">
-            <div class="placeholder">Belum ada sample. Klik <strong>Ambil Sample</strong> untuk mulai.</div>
-          </div>
+          <div id="sampleArticle" class="result-area"><div class="placeholder">Belum ada sample. Klik <strong>Ambil Sample</strong> untuk mulai.</div></div>
 
           <h3>Gold Summary</h3>
-          <div id="sampleGold" class="result-area">
-            <div class="placeholder">—</div>
-          </div>
+          <div id="sampleGold" class="result-area"><div class="placeholder">—</div></div>
         </div>
       </section>
 
@@ -262,7 +264,7 @@
               kalimat dengan skor TF-IDF + cosine + PageRank.
             </li>
             <li>
-              <strong>Claude 4.5 Sonnet API</strong> — peringkasan abstraktif menggunakan API key dari
+              <strong>Google Gemini API</strong> — peringkasan abstraktif menggunakan API key dari
               file <code>.env</code>.
             </li>
           </ul>
@@ -288,6 +290,9 @@
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <!-- PDF.js & Mammoth.js for client-side PDF/DOCX parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>

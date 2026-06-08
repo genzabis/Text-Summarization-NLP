@@ -101,16 +101,46 @@ def flatten_summary(summary: List[List[str]]) -> str:
 
 
 def split_sentences(text: str) -> List[str]:
-    """Pecah teks bebas (input user) menjadi kalimat sederhana.
+    """Pecah teks bebas (input user) menjadi kalimat secara cerdas.
 
-    Tidak butuh model NLTK eksternal supaya runtime ringan.
+    Menggunakan teknik placeholder untuk singkatan bahasa Indonesia (PT., Rp., Jl., dll.)
+    dan bilangan numerik (10.000) agar kalimat tidak terpecah di tengah jalan.
     """
     text = text.strip()
     if not text:
         return []
-    # Pisah berdasarkan tanda . ! ? yang diikuti spasi/akhir.
-    parts = re.split(r"(?<=[\.\!\?])\s+", text)
-    return [p.strip() for p in parts if p.strip()]
+
+    # Singkatan umum Bahasa Indonesia yang diikuti titik
+    abbreviations = [
+        "pt", "rp", "jl", "dr", "prof", "ir", "kab", "kec", "kel", "no", 
+        "tbk", "capt", "drs", "st", "s.pd", "m.kom", "dll", "dst", "dsb", "dsk",
+        "wib", "wita", "wit", "kpk", "dpr", "dki", "diy", "as", "us", "ri",
+        "jan", "feb", "mar", "apr", "mei", "jun", "jul", "agt", "sep", "okt", "nov", "des",
+        "hal", "art", "vol", "hlm", "h", "m"
+    ]
+    
+    # Ganti titik pada singkatan (case-insensitive) dengan placeholder khusus
+    temp_text = text
+    for abbr in abbreviations:
+        # Regex yang mencocokkan batas kata + singkatan + titik
+        pattern = re.compile(rf"\b{abbr}\.", re.IGNORECASE)
+        temp_text = pattern.sub(f"{abbr}[DOT]", temp_text)
+        
+    # Juga untuk desimal/ribuan: "10.000" -> "10[DOT]000"
+    temp_text = re.sub(r"(\d+)\.(\d+)", r"\1[DOT]\2", temp_text)
+    
+    # Pisah berdasarkan tanda . ! ? yang diikuti spasi/akhir kalimat
+    parts = re.split(r"(?<=[\.\!\?])\s+", temp_text)
+    
+    sentences = []
+    for p in parts:
+        p_clean = p.strip()
+        if p_clean:
+            # Kembalikan placeholder [DOT] menjadi titik semula
+            p_restored = p_clean.replace("[DOT]", ".")
+            sentences.append(p_restored)
+            
+    return sentences
 
 
 def simple_tokenize(text: str) -> List[str]:

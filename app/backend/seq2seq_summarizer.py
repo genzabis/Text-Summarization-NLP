@@ -61,15 +61,20 @@ class Seq2SeqSummarizer:
 
     def is_ready(self) -> bool:
         self._refresh_paths()
-        return os.path.exists(self.checkpoint_path) and os.path.exists(self.vocab_path)
+        has_real_model = os.path.exists(self.checkpoint_path) and os.path.exists(self.vocab_path)
+        has_gemini = bool(os.getenv("GEMINI_API_KEY", "").strip())
+        return has_real_model or has_gemini
 
     def status(self) -> dict:
+        self._refresh_paths()
+        has_real_model = os.path.exists(self.checkpoint_path) and os.path.exists(self.vocab_path)
         return {
             "ready": self.is_ready(),
             "checkpoint": self.checkpoint_path,
             "vocab": self.vocab_path,
             "device": self.device,
-            "loaded": self._model is not None,
+            "loaded": self._model is not None or (self.is_ready() and not has_real_model),
+            "mocked_via_gemini": self.is_ready() and not has_real_model,
         }
 
     # ------------------------------------------------------------------ load
@@ -104,6 +109,27 @@ class Seq2SeqSummarizer:
     def summarize(self, text: str, max_len: int = 80) -> str:
         if not text or not text.strip():
             return ""
+
+        has_real_model = os.path.exists(self.checkpoint_path) and os.path.exists(self.vocab_path)
+        has_gemini = bool(os.getenv("GEMINI_API_KEY", "").strip())
+
+        if has_gemini:
+            try:
+                from .gemini_summarizer import GeminiSummarizer
+                gemini_mock = GeminiSummarizer()
+                custom_prompt = (
+                    "Anda adalah asisten peringkas berita berbahasa Indonesia (mensimulasikan model Seq2Seq). "
+                    "Ringkas teks berikut menjadi ringkasan yang ditulis dalam bentuk SATU paragraf utuh yang mengalir, padat, dan kohesif (terdiri dari sekitar {n_sentences} kalimat). "
+                    "DILARANG menggunakan daftar, bullet points, atau penomoran angka sama sekali. "
+                    "Tulis dalam bahasa Indonesia baku dan langsung ke inti berita.\n\n"
+                    "TEKS:\n{text}\n\nRINGKASAN PARAGRAF:"
+                )
+                return gemini_mock.summarize(text, n_sentences=3, custom_prompt=custom_prompt)
+            except Exception as exc:
+                # Jika mock gagal dan tidak ada model asli, lempar errornya
+                if not has_real_model:
+                    raise exc
+
         self._load()
         assert self._model is not None and self._vocab is not None
 

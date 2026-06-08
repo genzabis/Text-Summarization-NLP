@@ -120,14 +120,25 @@ def summarize(text_or_sentences, num_sentences: int = 3) -> str:
     else:
         sentences = [s for s in text_or_sentences if s and s.strip()]
 
-    if len(sentences) <= num_sentences:
-        return " ".join(sentences)
+    # Filter kalimat yang terlalu pendek (di bawah 5 kata) agar tidak terpilih
+    # potongan kata/singkatan sampah seperti "Ia mengatakan.", "PT.", "Rp. 50.000", dll.
+    valid_sentences = []
+    original_indices = []
+    for idx, s in enumerate(sentences):
+        tokens = [t for t in simple_tokenize(s) if t.isalnum()]
+        if len(tokens) >= 5:
+            valid_sentences.append(s)
+            original_indices.append(idx)
 
-    docs_tokens = [_filter_tokens(simple_tokenize(s)) for s in sentences]
+    # Fallback jika kalimat valid terlalu sedikit, gunakan kalimat asli
+    if len(valid_sentences) <= num_sentences:
+        return " ".join(sentences[:num_sentences])
+
+    docs_tokens = [_filter_tokens(simple_tokenize(s)) for s in valid_sentences]
     idf = _build_idf(docs_tokens)
     vectors = [_tfidf_vector(tokens, idf) for tokens in docs_tokens]
 
-    n = len(sentences)
+    n = len(valid_sentences)
     sim: List[List[float]] = [[0.0] * n for _ in range(n)]
     for i in range(n):
         for j in range(i + 1, n):
@@ -141,5 +152,7 @@ def summarize(text_or_sentences, num_sentences: int = 3) -> str:
         key=lambda x: x[0],
         reverse=True,
     )
-    selected_idx = sorted(idx for _, idx in ranked[:num_sentences])
+    
+    # Ambil index terpilih lalu kembalikan ke index asli dari `sentences`
+    selected_idx = sorted(original_indices[idx] for _, idx in ranked[:num_sentences])
     return " ".join(sentences[i] for i in selected_idx)

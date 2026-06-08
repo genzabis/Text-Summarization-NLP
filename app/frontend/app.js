@@ -31,7 +31,8 @@ async function refreshStatus() {
 
     const items = [
       { label: "TextRank", ready: data.textrank?.ready },
-      { label: "Claude 4.5 Sonnet", ready: data.gemini?.ready },
+      { label: "Seq2Seq", ready: data.seq2seq?.ready },
+      { label: "Google Gemini", ready: data.gemini?.ready },
     ];
 
     for (const it of items) {
@@ -150,17 +151,70 @@ $("fileInput").addEventListener("change", (e) => {
     e.target.value = "";
     return;
   }
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    $("inputText").value = String(ev.target.result || "");
-    info.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
-    info.classList.add("has-file");
-    showError(null);
-  };
-  reader.onerror = () => {
-    showError("Gagal membaca file.");
-  };
-  reader.readAsText(file, "utf-8");
+
+  showError(null);
+  const extension = file.name.split('.').pop().toLowerCase();
+  info.textContent = `Membaca ${file.name}...`;
+
+  if (extension === "txt") {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      $("inputText").value = String(ev.target.result || "");
+      info.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+      info.classList.add("has-file");
+      updateCharCounter();
+    };
+    reader.onerror = () => {
+      showError("Gagal membaca file teks.");
+    };
+    reader.readAsText(file, "utf-8");
+  } else if (extension === "pdf") {
+    const reader = new FileReader();
+    reader.onload = async function() {
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        const typedarray = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          text += textContent.items.map(item => item.str).join(" ") + "\n";
+        }
+        $("inputText").value = text.trim();
+        info.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+        info.classList.add("has-file");
+        updateCharCounter();
+      } catch (err) {
+        showError("Gagal memproses file PDF: " + err.message);
+      }
+    };
+    reader.onerror = () => {
+      showError("Gagal membaca file PDF.");
+    };
+    reader.readAsArrayBuffer(file);
+  } else if (extension === "docx") {
+    const reader = new FileReader();
+    reader.onload = function(loadEvent) {
+      const arrayBuffer = loadEvent.target.result;
+      mammoth.extractRawText({arrayBuffer: arrayBuffer})
+        .then(function(result) {
+          $("inputText").value = (result.value || "").trim();
+          info.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+          info.classList.add("has-file");
+          updateCharCounter();
+        })
+        .catch(function(err) {
+          showError("Gagal memproses file Word (.docx): " + err.message);
+        });
+    };
+    reader.onerror = () => {
+      showError("Gagal membaca file Word.");
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    showError("Format file tidak didukung. Harap gunakan file .txt, .pdf, atau .docx.");
+  }
 });
 
 $("btnClear").addEventListener("click", () => {
@@ -267,6 +321,40 @@ $("btnSendToInput").addEventListener("click", () => {
   $("referenceWrap").classList.remove("hidden");
   // pindah ke tab Ringkas
   document.querySelector('.nav-item[data-tab="summarize"]').click();
+});
+
+// ---------- Dark Mode ----------
+const themeToggle = $("themeToggle");
+const themeIcon = $("themeIcon");
+const themeLabel = $("themeLabel");
+
+function setDarkTheme(isDark) {
+  if (isDark) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    localStorage.setItem("theme", "dark");
+    themeLabel.textContent = "Mode Terang";
+    themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme", "light");
+    themeLabel.textContent = "Mode Gelap";
+    themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>`;
+  }
+}
+
+const savedTheme = localStorage.getItem("theme");
+const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+const defaultDark = savedTheme === "dark" || (!savedTheme && systemPrefersDark);
+
+if (defaultDark) {
+  setDarkTheme(true);
+} else {
+  setDarkTheme(false);
+}
+
+themeToggle.addEventListener("click", () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  setDarkTheme(!isDark);
 });
 
 // ---------- Init ----------

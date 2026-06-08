@@ -1,11 +1,12 @@
 # Text Summarization NLP — IndoSum
 
-Aplikasi peringkas teks Bahasa Indonesia berbasis dataset **IndoSum**, dengan dua pendekatan dalam satu antarmuka: TextRank (baseline) dan Claude 4.5 Sonnet / Gemini API (LLM).
+Aplikasi peringkas teks Bahasa Indonesia berbasis dataset **IndoSum**, dengan tiga pendekatan dalam satu antarmuka: TextRank (baseline), Seq2Seq (abstraktif), dan Google Gemini API (LLM).
 
 | Model | Tipe | Catatan |
 |------|------|---------|
 | **TextRank** | Extractive (baseline) | Implementasi sendiri (TF-IDF + cosine + PageRank) |
-| **Claude 4.5 Sonnet / Gemini API** | Abstractive (LLM) | Dijalankan melalui API gateway custom / Google Generative AI |
+| **Seq2Seq** | Abstractive | Model sequence-to-sequence dengan Bahdanau Attention (lokal/mocked) |
+| **Google Gemini API** | Abstractive (LLM) | Dijalankan melalui Google Generative AI / API gateway custom |
 
 Source dataset IndoSum (Kaggle: `linkgish/indosum`) berada di root repo sebagai `train.0X.jsonl`, `dev.0X.jsonl`, dan `test.0X.jsonl`.
 
@@ -19,6 +20,7 @@ indosum/
     │   ├── app.py                     <- Flask server + REST API
     │   ├── data_utils.py              <- loader & preprocess IndoSum
     │   ├── textrank_summarizer.py     <- baseline TextRank
+    │   ├── seq2seq_summarizer.py      <- model Seq2Seq + Bahdanau
     │   ├── gemini_summarizer.py       <- wrapper Gemini & Custom API (Claude)
     │   └── rouge_eval.py              <- ROUGE F1
     ├── frontend/

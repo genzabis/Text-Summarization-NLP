@@ -64,6 +64,10 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
+body, aside, main, .card, textarea, select, input, .nav-item, li, button, .status-list li, .stat, .rouge-grid > div, .upload-row {
+  transition: background 250ms ease, background-color 250ms ease, border-color 250ms ease, color 250ms ease, box-shadow 250ms ease;
+}
+
 a { color: var(--brand-600); text-decoration: none; }
 a:hover { color: var(--brand-700); }
 code {
@@ -347,6 +351,7 @@ em {
   flex-direction: column;
   align-self: stretch;
   margin: 0;
+  height: 100%;
   /* Disable hover-shift inside grid so cards stay perfectly aligned */
   transition: box-shadow 200ms ease;
 }
@@ -374,16 +379,24 @@ em {
   transition: box-shadow 200ms ease;
 }
 .card + .card { margin-top: 16px; }
+.grid > .card + .card { margin-top: 0; }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   gap: 12px;
   border-bottom: 1px solid var(--line);
   padding-bottom: 10px;
   min-height: 36px;
+}
+.textarea-wrap,
+.result-wrap {
+  margin-top: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .card h2 {
   font-size: 15.5px;
@@ -411,7 +424,8 @@ em {
 
 .input-area {
   width: 100%;
-  min-height: 200px;
+  flex: 1;
+  min-height: 260px;
   background: var(--surface-2);
   color: var(--ink);
   border: 1px solid var(--border);
@@ -420,7 +434,7 @@ em {
   font-family: inherit;
   font-size: 14px;
   line-height: 1.6;
-  resize: vertical;
+  resize: none;
   outline: none;
   transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
@@ -431,7 +445,7 @@ em {
   background: var(--surface);
   box-shadow: 0 0 0 3px var(--brand-50);
 }
-.input-area.small { min-height: 90px; }
+.input-area.small { height: 90px; }
 
 /* Textarea wrap with floating char counter */
 .textarea-wrap {
@@ -565,6 +579,41 @@ em {
   flex-wrap: wrap;
 }
 
+#tab-summarize .control-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+  align-items: flex-end;
+}
+
+#tab-summarize .control-row .field.check {
+  grid-column: span 2;
+  margin-top: 4px;
+  padding-bottom: 4px;
+}
+
+#tab-summarize .field input:not([type="checkbox"]),
+#tab-summarize .field select {
+  width: 100%;
+  min-width: 0;
+}
+
+#tab-summarize .actions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+#tab-summarize .actions .btn {
+  width: 100%;
+}
+
+#tab-summarize .actions .btn-primary {
+  grid-column: span 2;
+}
+
 /* ============================================================
    Upload row
 ============================================================ */
@@ -672,21 +721,23 @@ em {
 
 .result-wrap {
   position: relative;
-  flex: 1;
   display: flex;
+  flex-direction: column;
 }
 .result-area {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 44px 12px 14px;
-  min-height: 220px;
+  flex: 1;
+  min-height: 260px;
   white-space: pre-wrap;
   line-height: 1.6;
   font-size: 14px;
   color: var(--ink);
   transition: background 140ms ease, border-color 140ms ease;
   width: 100%;
+  overflow-y: auto;
 }
 
 .copy-btn {
@@ -814,12 +865,16 @@ em {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-top: 14px;
   margin-bottom: 14px;
   color: var(--ink-mute);
   font-size: 13px;
   font-weight: 500;
 }
 .loading.hidden { display: none; }
+.loading + .result-wrap {
+  margin-top: 0;
+}
 .loading-bar {
   width: 80px; height: 4px;
   border-radius: 999px;
@@ -909,4 +964,65 @@ em {
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* ============================================================
+   Dark Theme Overrides
+   ============================================================ */
+
+[data-theme="dark"] {
+  --bg:            #0b0f19;
+  --bg-soft:       #151c2c;
+  --surface:       #111827;
+  --surface-2:     #1e293b;
+  --border:        #1f2937;
+  --border-strong: #374151;
+  --line:          #1f2937;
+
+  --ink:        #f9fafb;
+  --ink-soft:   #e5e7eb;
+  --ink-mute:   #9ca3af;
+  --ink-light:  #6b7280;
+
+  --brand-50:   #1e293b;
+  --brand-100:  #0f172a;
+  --brand-200:  #1d4ed8;
+  --brand-300:  #2563eb;
+  --brand-400:  #3b82f6;
+  --brand-500:  #60a5fa;
+  --brand-600:  #3b82f6;
+  --brand-700:  #93c5fd;
+
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger:  #f87171;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(1100px 540px at 110% -20%, #172554 0%, transparent 60%),
+    radial-gradient(900px 480px at -10% 110%, #0f172a 0%, transparent 55%),
+    var(--bg);
+}
+
+/* Make sure textareas, inputs, and selects look nice in dark mode */
+[data-theme="dark"] select option {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .copy-btn {
+  background: rgba(17, 24, 39, 0.9);
+}
+
+[data-theme="dark"] .char-counter {
+  background: rgba(17, 24, 39, 0.85);
+}
+
+[data-theme="dark"] .rouge-grid > div {
+  background: linear-gradient(180deg, var(--brand-50), var(--surface));
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  border-color: var(--bg);
 }

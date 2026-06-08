@@ -12,11 +12,11 @@ from typing import Optional
 
 _PROMPT_TEMPLATE = (
     "Anda adalah asisten peringkas berita berbahasa Indonesia. "
-    "Ringkas teks berikut menjadi {n_sentences} kalimat yang padat, "
-    "informatif, dan tetap mempertahankan fakta inti. "
-    "Tulis ringkasan dalam bahasa Indonesia yang baku, hindari basa-basi, "
-    "dan jangan tambahkan informasi yang tidak ada di teks.\n\n"
-    "TEKS:\n{text}\n\nRINGKASAN:"
+    "Ringkas teks berikut menjadi {n_sentences} poin penting. "
+    "Format ringkasan Anda wajib menggunakan daftar penomoran angka (contoh: 1. ..., 2. ..., 3. ...). "
+    "Setiap poin harus berupa kalimat yang padat, informatif, dan sesuai fakta teks. "
+    "Tulis dalam bahasa Indonesia baku dan hindari basa-basi.\n\n"
+    "TEKS:\n{text}\n\nRINGKASAN POIN-POIN:"
 )
 
 
@@ -69,13 +69,16 @@ class GeminiSummarizer:
             self._model = genai.GenerativeModel(self.model_name)
 
     # --------------------------------------------------------------- predict
-    def summarize(self, text: str, n_sentences: int = 3) -> str:
+    def summarize(self, text: str, n_sentences: int = 3, custom_prompt: Optional[str] = None) -> str:
         text = (text or "").strip()
         if not text:
             return ""
         self._load()
 
-        prompt = _PROMPT_TEMPLATE.format(n_sentences=n_sentences, text=text)
+        if custom_prompt:
+            prompt = custom_prompt.format(n_sentences=n_sentences, text=text)
+        else:
+            prompt = _PROMPT_TEMPLATE.format(n_sentences=n_sentences, text=text)
 
         # Jika base_url di-set, panggil endpoint OpenAI-compatible custom via urllib
         if self.base_url:
